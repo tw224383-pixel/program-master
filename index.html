@@ -1,0 +1,1873 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>日本語プログラミングであそぼう！</title>
+  <!-- Google Fonts（グーグルフォント）から、きれいな文字のデザインを読み込みます -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ==========================================================================
+       1. 画面全体の見た目（CSS）
+       ========================================================================== */
+
+    /* すべての要素で、余計なすきまをなくし、サイズ計算をわかりやすくします */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* 画面全体の背景（バックグラウンド）を設定します */
+    body {
+      font-family: 'Noto Sans JP', 'Outfit', sans-serif;
+      /* パステル調のきれいなグラデーション背景です */
+      background: linear-gradient(135deg, #f5f7fa 0%, #e3eeff 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      color: #333333;
+      padding: 20px;
+    }
+
+    /* タイトルなどのヘッダー部分 */
+    header {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #1e3c72;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-bottom: 8px;
+    }
+
+    header p {
+      font-size: 1rem;
+      color: #555555;
+    }
+
+    /* 🎮 モード選択セレクトボックスとスコア表示のラッパー */
+    .mode-selector-wrapper {
+      background: #ffffff;
+      padding: 12px 24px;
+      border-radius: 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      border: 2px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 1000px;
+      gap: 16px;
+    }
+
+    .selector-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .mode-label {
+      font-weight: 700;
+      color: #4a5568;
+      font-size: 1rem;
+    }
+
+    #mode-select {
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: 2px solid #cbd5e0;
+      background-color: #fafbfc;
+      color: #2d3748;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    #mode-select:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+    }
+
+    #mode-select option:disabled {
+      color: #a0aec0;
+      background-color: #edf2f7;
+    }
+
+    /* 💎 スコア表示ボード */
+    .score-board {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      padding: 8px 18px;
+      border-radius: 12px;
+      font-weight: 900;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+      display: none;
+      align-items: center;
+      gap: 6px;
+      animation: scoreFadeIn 0.3s ease-out;
+    }
+
+    @keyframes scoreFadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ⭐ 難易度（レベル）選択ボタンのエリア */
+    .level-selector-wrapper {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      align-items: center;
+      width: 100%;
+      max-width: 1000px;
+      background: rgba(255, 255, 255, 0.5);
+      padding: 10px 20px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+    }
+
+    .level-label {
+      font-weight: 700;
+      color: #4a5568;
+      font-size: 0.95rem;
+    }
+
+    .btn-level {
+      padding: 8px 18px;
+      font-size: 0.95rem;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      font-weight: 700;
+      background: #edf2f7;
+      color: #4a5568;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-level:hover {
+      background: #e2e8f0;
+    }
+
+    /* メインのコンテンツを囲むコンテナ（すりガラスのような見た目にします） */
+    .app-container {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 1000px;
+      display: flex;
+      flex-direction: row;
+      gap: 24px;
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+
+    /* タブレットやスマホなど、画面が狭いときは縦並びにします */
+    @media (max-width: 800px) {
+      .app-container {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+
+    /* ── 左半分のエリア（ステージとキャラクター設定） ── */
+    .left-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      width: 100%;
+    }
+
+    /* キャラクターが動くステージ */
+    .stage-wrapper {
+      position: relative;
+      border-radius: 20px;
+      background: #ffffff;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+      padding: 10px;
+      border: 4px solid #eef2f7;
+    }
+
+    #stage {
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+      background-color: #fafbfc;
+      background-image:
+        linear-gradient(to right, rgba(99, 102, 241, 0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(99, 102, 241, 0.08) 1px, transparent 1px);
+      transition: background-size 0.3s ease;
+    }
+
+    /* 🧱 迷路のカベ・条件分岐の障害物 */
+    .maze-wall {
+      position: absolute;
+      background: linear-gradient(135deg, #fcb69f 0%, #ffecd2 100%);
+      border: 2px solid #f0a38b;
+      border-radius: 6px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+      z-index: 5;
+    }
+
+    /* 🔵 条件分岐モードの「カベ」 */
+    .if-wall {
+      position: absolute;
+      background: linear-gradient(135deg, #93c5fd 0%, #3b82f6 100%);
+      border: 2px solid #2563eb;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    /* 🎁 変数モードの宝箱 */
+    .maze-treasure {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      z-index: 5;
+      transition: transform 0.3s;
+    }
+
+    /* ⭐ ゴールマーク */
+    .maze-goal {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      animation: pulse 1.5s infinite alternate;
+      z-index: 5;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.9); }
+      100% { transform: scale(1.15); }
+    }
+
+    /* キャラクター（ロボット・四角形） */
+    #character {
+      position: absolute;
+      transform: translate(-50%, -50%) rotate(0deg);
+      transition: all 0.6s ease-in-out;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    /* 初期状態の青い四角（かわいいデザイン） */
+    .default-skin {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
+      border: 2px solid #ffffff;
+      position: relative;
+      transition: transform 0.2s ease;
+    }
+
+    /* キャラクターの向きがわかる「目」のパーツ */
+    .eyes {
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .eye {
+      width: 6px;
+      height: 6px;
+      background-color: #1a2a3a;
+      border-radius: 50%;
+      animation: blink 4s infinite;
+    }
+
+    @keyframes blink {
+      0%, 90%, 100% { transform: scaleY(1); }
+      95% { transform: scaleY(0.1); }
+    }
+
+    /* 💬 キャラクターの吹き出し */
+    .speech-bubble {
+      position: absolute;
+      background: #ffffff;
+      border: 2px solid #3182ce;
+      border-radius: 12px;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #2b6cb0;
+      white-space: nowrap;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      transform: translate(-50%, -100%);
+      transition: all 0.6s ease-in-out, opacity 0.15s ease-out;
+      z-index: 20;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 8px 8px 0;
+      border-style: solid;
+      border-color: #ffffff transparent;
+      display: block;
+      width: 0;
+    }
+
+    .speech-bubble::before {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 10px 10px 0;
+      border-style: solid;
+      border-color: #3182ce transparent;
+      display: block;
+      width: 0;
+      z-index: -1;
+    }
+
+    /* ⚡ 必殺技（ジャンプ）のアニメーションクラス */
+    .jumping .default-skin {
+      transform: scale(1.4);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+    }
+
+    /* 🏆 ゴールクリア時のジャンプアニメーション */
+    @keyframes winBounce {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -85%) scale(1.25); }
+    }
+    .winning {
+      animation: winBounce 0.5s ease infinite;
+    }
+
+    /* 絵文字スキン */
+    .emoji-skin {
+      font-size: 38px;
+      user-select: none;
+      line-height: 1;
+    }
+
+    /* 画像スキン */
+    .image-skin {
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+      border-radius: 8px;
+      filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15));
+    }
+
+    /* キャラクターの見た目を変更する入力エリア */
+    .character-changer {
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 16px;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+      border: 1px solid #eef2f7;
+    }
+
+    .character-changer h3 {
+      font-size: 0.95rem;
+      color: #4a5568;
+      margin-bottom: 8px;
+    }
+
+    .changer-inputs {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* ── 右半分のエリア（プログラム入力と説明） ── */
+    .right-panel {
+      flex: 1.2;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+    }
+
+    /* プログラムを入力するエリア */
+    .editor-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .editor-section label {
+      font-weight: 700;
+      color: #2d3748;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* 命令を入力するテキストボックス */
+    #code-input {
+      width: 100%;
+      height: 160px;
+      border-radius: 14px;
+      border: 2px solid #cbd5e0;
+      padding: 12px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 1.1rem;
+      line-height: 1.5;
+      resize: none;
+      color: #2d3748;
+      background-color: #fafbfc;
+      transition: all 0.3s;
+    }
+
+    #code-input:focus {
+      outline: none;
+      border-color: #667eea;
+      background-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+    }
+
+    /* 命令をかんたんに入力できるボタン置き場 */
+    .preset-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    /* 操作ボタンの基本スタイル */
+    .btn {
+      font-family: inherit;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    /* かんたん入力用の小さなボタン */
+    .btn-helper {
+      background-color: #edf2f7;
+      color: #4a5568;
+      border: 1px solid #e2e8f0;
+    }
+
+    .btn-helper:hover {
+      background-color: #e2e8f0;
+      color: #2d3748;
+    }
+
+    /* 🛠️ バグしゅうせい／必殺技づくり パネルの共通スタイル */
+    .debug-panel {
+      margin-top: 5px;
+      padding: 14px;
+      border-radius: 14px;
+      width: 100%;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .debug-title {
+      font-size: 0.95rem;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .debug-desc {
+      font-size: 0.85rem;
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+
+    .btn-debug {
+      font-family: inherit;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-debug:active {
+      transform: scale(0.96);
+    }
+
+    /* 実行・リセットボタン */
+    .control-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .btn-run {
+      flex: 2;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #ffffff;
+      font-size: 1.1rem;
+      padding: 14px 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-run:hover {
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+      filter: brightness(1.05);
+    }
+
+    .btn-reset {
+      flex: 1;
+      background-color: #f56565;
+      color: #ffffff;
+      font-size: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(245, 101, 101, 0.2);
+    }
+
+    .btn-reset:hover {
+      background-color: #e53e3e;
+      box-shadow: 0 6px 15px rgba(245, 101, 101, 0.3);
+    }
+
+    /* 実行ログ（コンソール） */
+    .console-section {
+      background-color: #1a202c;
+      color: #cbd5e0;
+      border-radius: 16px;
+      padding: 16px;
+      min-height: 120px;
+      max-height: 180px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 0.9rem;
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+      border: 1px solid #2d3748;
+    }
+
+    .console-line {
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+
+    .console-line.success {
+      color: #48bb78;
+    }
+
+    .console-line.error {
+      color: #f56565;
+      font-weight: bold;
+    }
+
+    .console-line.info {
+      color: #63b3ed;
+    }
+
+    /* 説明やヒントのカード */
+    .help-card {
+      background: #ebf8ff;
+      border-left: 5px solid #3182ce;
+      padding: 16px;
+      border-radius: 12px;
+      color: #2b6cb0;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .help-card h4 {
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* テキスト入力フォーム（着せ替え用） */
+    .input-text {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #cbd5e0;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+
+    .input-text:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .btn-apply {
+      background-color: #319795;
+      color: white;
+      border-radius: 8px;
+    }
+
+    .btn-apply:hover {
+      background-color: #2c7a7b;
+    }
+
+    /* 🏆 完全クリアモーダルのスタイル */
+    .win-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      animation: modalFadeIn 0.3s ease-out;
+    }
+
+    .win-modal-content {
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 28px;
+      text-align: center;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+      border: 3px solid #fbbf24;
+      transform: scale(0.9);
+      animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes modalPop {
+      to { transform: scale(1); }
+    }
+
+    .win-modal-title {
+      font-size: 2.2rem;
+      font-weight: 900;
+      background: linear-gradient(to right, #f59e0b, #d97706);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+    }
+
+    .win-modal-desc {
+      font-size: 1.05rem;
+      color: #4b5563;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .win-modal-badge {
+      font-size: 70px;
+      margin-bottom: 24px;
+      animation: bouncePulse 2s infinite;
+      display: inline-block;
+    }
+
+    @keyframes bouncePulse {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-15px) scale(1.1); }
+    }
+
+    .modal-btn-area {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .btn-modal-close {
+      background-color: #9ca3af;
+      color: white;
+    }
+
+    .btn-modal-reset {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- タイトル部分 -->
+  <header>
+    <h1>🤖 日本語プログラミングであそぼう！</h1>
+    <p>めいれいを入力して、キャラクターをゴールまでうごかしてみよう！</p>
+    <p style="font-size: 0.85rem; color: #718096; margin-top: 4px; font-weight: 700;">プログラムの作者：黒田先生 👨‍🏫</p>
+  </header>
+
+  <!-- 🎮 画面上部のモード選択セレクトボックス & スコアボード -->
+  <div class="mode-selector-wrapper">
+    <div class="selector-left">
+      <label for="mode-select" class="mode-label">🎮 学習モードをえらんでね：</label>
+      <select id="mode-select" onchange="changeMode()">
+        <option value="normal">① レシピ作成（順序）モード 📝</option>
+        <option value="bug">② バグ探しモード 🔍</option>
+        <option value="special">③ 必殺技（関数）モード ⚡</option>
+        <option value="maze">④ 迷路パズルモード 🧱</option>
+        <option value="loop">⑤ 自動化（ループ）モード 🔁</option>
+        <option value="condition">⑥ 条件分岐（判断）モード ❓</option>
+        <option value="treasure">⑦ 変数の宝箱モード 💎</option>
+      </select>
+    </div>
+    <!-- 💎 得点（スコア）表示ボード -->
+    <div class="score-board" id="score-board">
+      💎 スコア: <span id="score-val">0</span>点
+    </div>
+  </div>
+
+  <!-- ⭐ 難易度（レベル）選択ボタンエリア -->
+  <div class="level-selector-wrapper" id="level-selector-wrapper">
+    <span class="level-label">⭐ レベルをえらんでね：</span>
+    <button class="btn-level" id="btn-level-1" onclick="changeLevel(1)">レベル 1</button>
+    <button class="btn-level" id="btn-level-2" onclick="changeLevel(2)">レベル 2</button>
+    <button class="btn-level" id="btn-level-3" onclick="changeLevel(3)">レベル 3</button>
+  </div>
+
+  <!-- メインの操作画面 -->
+  <div class="app-container">
+
+    <!-- ── 左側：ステージとキャラクター設定 ── -->
+    <div class="left-panel">
+      <!-- キャラクターが動くステージ -->
+      <div class="stage-wrapper">
+        <div id="stage">
+          <!-- 🧱 迷路のカベや宝箱、ゴールマークが描画されるコンテナ -->
+          <div id="maze-container"></div>
+          
+          <!-- 💬 キャラクターの頭上に出る吹き出し -->
+          <div id="speech-bubble" class="speech-bubble">こんにちは！</div>
+
+          <!-- キャラクター本体（初期は青い四角） -->
+          <div id="character">
+            <div id="char-skin" class="default-skin">
+              <div class="eyes">
+                <span class="eye"></span>
+                <span class="eye"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- キャラクターの見た目変更エリア -->
+      <div class="character-changer">
+        <h3>🎨 キャラクターの見た目をかえよう</h3>
+        <div class="changer-inputs">
+          <input type="text" id="skin-input" class="input-text" placeholder="絵文字（🐱, 🚀など）や、画像のURLを入力してね">
+          <button class="btn btn-apply" onclick="changeCharacter()">かえる</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 右側：プログラム入力と結果 ── -->
+    <div class="right-panel">
+      <!-- プログラム入力 -->
+      <div class="editor-section">
+        <label for="code-input">📝 めいれい入力（プログラム）</label>
+        <textarea id="code-input" placeholder="ここにめいれいを入力してね。1行に1つずつ書きます。"></textarea>
+        
+        <!-- かんたんボタン -->
+        <div class="preset-buttons" id="presets-area">
+          <button class="btn btn-helper" id="btn-forward-preset" onclick="insertCommand('まえにすすむ')">🚶 まえにすすむ</button>
+          <button class="btn btn-helper" id="btn-right-preset" onclick="insertCommand('みぎをむく')">↪️ みぎをむく</button>
+          <button class="btn btn-helper" id="btn-left-preset" onclick="insertCommand('ひだりをむく')">↩️ ひだりをむく</button>
+          <!-- 必殺技モード用のボタン -->
+          <button class="btn btn-helper" id="btn-special-preset" onclick="insertCommand('ひっさつわざ')">⚡ ひっさつわざ</button>
+          <!-- ループモード用のボタン -->
+          <button class="btn btn-helper" id="btn-loop-preset" onclick="insertCommand('まえにすすむ 3回')">🔁 まえにすすむ 3回</button>
+          <!-- 条件分岐モード用のボタン -->
+          <button class="btn btn-helper" id="btn-if-preset" onclick="insertCommand('もしカベがあるなら：ジャンプする、そうでなければ：まえにすすむ')">❓ もしカベがあるなら...</button>
+        </div>
+
+        <!-- 🛠️ 自分で考えてバグをなおすデバッグパネル（バグ探しモードのみ表示） -->
+        <div class="debug-panel" id="debug-panel" style="display: none; background-color: #f0fdf4; border: 2px solid #a7f3d0;">
+          <div class="debug-title" style="color: #065f46;">🛠️ バグしゅうせいパネル</div>
+          <div class="debug-desc" style="color: #047857;">
+            「まえにすすむ」の進むばいりつがおかしくなっています。何倍に修正すれば1マス（50px）ずつ正しく進むようになるか、自分で考えてえらんでね！
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <select id="debug-multiplier-select" style="font-family: inherit; font-size: 0.95rem; font-weight: 700; padding: 8px 12px; border-radius: 8px; border: 2px solid #10b981; flex: 1; outline: none; cursor: pointer; color: #065f46; background-color: #ffffff;">
+              <option value="0.5">0.5倍にする（0.5マス 25px ずつ動く）</option>
+              <option value="1">1倍にする（1マス 50px ずつ動く）</option>
+              <option value="2">2倍にする（2マス 100px ずつ動く）</option>
+              <option value="3">3倍にする（3マス 150px ずつ動く）</option>
+            </select>
+            <button class="btn-debug" style="padding: 10px 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;" onclick="applyBugFix()">
+              なおす
+            </button>
+          </div>
+        </div>
+
+        <!-- ⚡ 必殺技づくりパネル（必殺技モードでのみ表示） -->
+        <div class="debug-panel" id="special-panel" style="display: none; background-color: #fef3c7; border: 2px solid #fde68a;">
+          <div class="debug-title" style="color: #92400e;">⚡ 必殺技づくりパネル</div>
+          <div class="debug-desc" style="color: #b45309;">
+            メインプログラムに「<strong>ひっさつわざ</strong>」と書いた時に、実行させたい命令のリストをつくろう！1行に1つずつ命令を書いて「セットする」を押してね。
+          </div>
+          <textarea id="special-code-input" style="width: 100%; height: 90px; border-radius: 10px; border: 2px solid #fcd34d; padding: 10px; font-family: inherit; font-size: 1rem; line-height: 1.4; resize: none; margin-bottom: 8px; color: #2d3748; background-color: #fffbeb; outline: none;" placeholder="まえにすすむ&#13;みぎをむく&#13;まえにすすむ"></textarea>
+          <button class="btn-debug" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #ffffff; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2); width: 100%; padding: 12px; font-size: 1rem;" onclick="applySpecialMove()">
+            ⚡ 必殺技をセットする
+          </button>
+        </div>
+      </div>
+
+      <!-- 実行・リセットボタン -->
+      <div class="control-buttons">
+        <button class="btn btn-run" onclick="runProgram()">▶ プログラムをうごかす</button>
+        <button class="btn btn-reset" onclick="resetApp()">🔄 さいしょに戻す</button>
+      </div>
+
+      <!-- 実行ログ（コンソール） -->
+      <div class="console-section" id="console">
+        <div class="console-line success">※ じゅんび完了！モードとレベルをえらんで動かしてね。</div>
+      </div>
+
+      <!-- 説明カード（モードによって中身が変わります） -->
+      <div class="help-card" id="help-card-content">
+        <!-- 初期の説明（JavaScriptから書き換えます） -->
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 🏆 完全クリア（パーフェクト）お祝いモーダル -->
+  <div class="win-modal-overlay" id="win-modal">
+    <div class="win-modal-content">
+      <h2 class="win-modal-title">🏆 パーフェクトクリア！ 🏆</h2>
+      <p class="win-modal-desc">
+        おめでとう！すべての学習モードのすべてのレベルで「★★（かくしクリア）」を達成しました！<br>
+        君は完全にプログラミングを極めたプログラミングマスターだ！👑
+      </p>
+      <div class="win-modal-badge">🏅🌟🤖🌟🏆</div>
+      <div class="modal-btn-area">
+        <button class="btn btn-modal-close" onclick="closeWinModal()">とじる</button>
+        <button class="btn btn-modal-reset" onclick="resetAllData()">もういちど最初からあそぶ 🔄</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       2. プログラム of JavaScript
+       ========================================================================== */ -->
+  <script>
+    // ==========================================================================
+    // ★ じゅんび：ゲームの設定（難易度ごとのマップパラメータを定義します）
+    // ==========================================================================
+    const STEP_DISTANCE = 50;
+    const STAGE_WIDTH = 450;
+    const STAGE_HEIGHT = 450;
+    const MOVE_SPEED = 600;
+    const GLOBAL_GOAL_GRID = { x: 8, y: 4 };
+    let BUG_MULTIPLIER_VAL = 2;
+    const INITIAL_SPECIAL_MOVE_ACTION = ["まえにすすむ", "みぎをむく", "まえにすすむ", "ひだりをむく", "まえにすすむ"];
+    let SPECIAL_MOVE_ACTION = [...INITIAL_SPECIAL_MOVE_ACTION];
+
+    const MAZE_WALLS = [
+      {x: 1, y: 1}, {x: 1, y: 2}, {x: 1, y: 3}, {x: 1, y: 4}, {x: 1, y: 5}, {x: 1, y: 6}, {x: 1, y: 7},
+      {x: 3, y: 0}, {x: 3, y: 1}, {x: 3, y: 3}, {x: 3, y: 4}, {x: 3, y: 5}, {x: 3, y: 7}, {x: 3, y: 8},
+      {x: 5, y: 0}, {x: 5, y: 1}, {x: 5, y: 2}, {x: 5, y: 3}, {x: 5, y: 5}, {x: 5, y: 6}, {x: 5, y: 7}, {x: 5, y: 8},
+      {x: 7, y: 0}, {x: 7, y: 1}, {x: 7, y: 2}, {x: 7, y: 3}, {x: 7, y: 5}, {x: 7, y: 6}, {x: 7, y: 7}, {x: 7, y: 8}
+    ];
+
+    const TREASURE_BOXES_CONFIG = [
+      { x: 2, y: 2, points: 10 },
+      { x: 6, y: 2, points: 20 },
+      { x: 4, y: 6, points: 30 }
+    ];
+
+    // ── 📊 7モード×3難易度（21ステージ分）のパラメータ設定 ──
+    const LEVELS_CONFIG = {
+      normal: {
+        1: { start: {x: 0, y: 4}, goal: {x: 4, y: 4}, code: "まえにすすむ\nまえにすすむ\nまえにすすむ\nまえにすすむ" },
+        2: { start: {x: 0, y: 4}, goal: {x: 8, y: 4}, code: "まえにすすむ\n(ゴール「⭐」まで何歩かな？)" },
+        3: { start: {x: 0, y: 8}, goal: {x: 8, y: 0}, code: "まえにすすむ\nみぎをむく\nまえにすすむ" }
+      },
+      bug: {
+        1: { start: {x: 0, y: 4}, goal: {x: 4, y: 4}, bugVal: 2, code: "まえにすすむ\nまえにすすむ" },
+        2: { start: {x: 0, y: 4}, goal: {x: 6, y: 4}, bugVal: 3, code: "まえにすすむ\nまえにすすむ" },
+        3: { start: {x: 0, y: 4}, goal: {x: 2, y: 4}, bugVal: 0.5, code: "まえにすすむ\nまえにすすむ\nまえにすすむ\nまえにすすむ" }
+      },
+      special: {
+        1: { start: {x: 0, y: 4}, goal: {x: 3, y: 4}, code: "ひっさつわざ" },
+        2: { start: {x: 0, y: 4}, goal: {x: 5, y: 4}, code: "まえにすすむ\nひっさつわざ" },
+        3: { start: {x: 0, y: 4}, goal: {x: 8, y: 4}, code: "ひっさつわざ\nひっさつわざ" }
+      },
+      maze: {
+        1: {
+          start: {x: 0, y: 4}, goal: {x: 4, y: 4},
+          walls: [{x: 2, y: 3}, {x: 2, y: 4}, {x: 2, y: 5}],
+          code: "まえにすすむ\n(うえかしたにカベをよけよう)"
+        },
+        2: {
+          start: {x: 0, y: 4}, goal: {x: 8, y: 4},
+          walls: [
+            {x: 2, y: 1}, {x: 2, y: 2}, {x: 2, y: 3}, {x: 2, y: 4}, {x: 2, y: 5}, {x: 2, y: 6},
+            {x: 5, y: 2}, {x: 5, y: 3}, {x: 5, y: 4}, {x: 5, y: 5}, {x: 5, y: 6}, {x: 5, y: 7}
+          ],
+          code: "まえにすすむ\nひだりをむく"
+        },
+        3: {
+          start: {x: 0, y: 8}, goal: {x: 8, y: 0},
+          walls: MAZE_WALLS,
+          code: "みぎをむく\nまえにすすむ"
+        }
+      },
+      loop: {
+        1: { start: {x: 0, y: 4}, goal: {x: 4, y: 4}, code: "まえにすすむ 4回" },
+        2: { start: {x: 0, y: 4}, goal: {x: 8, y: 4}, code: "まえにすすむ 8回" },
+        3: { start: {x: 0, y: 8}, goal: {x: 8, y: 0}, code: "まえにすすむ 8回\nみぎをむく\nまえにすすむ 8回" }
+      },
+      condition: {
+        1: { start: {x: 1, y: 4}, goal: {x: 5, y: 4}, ifWalls: [{x: 3, y: 4}], code: "まえにすすむ\nもしカベがあるなら：ジャンプする、そうでなければ：まえにすすむ\nまえにすすむ" },
+        2: { start: {x: 0, y: 4}, goal: {x: 6, y: 4}, ifWalls: [{x: 3, y: 4}], code: "まえにすすむ 2回\nもしカベがあるなら：ジャンプする、そうでなければ：まえにすすむ\nまえにすすむ 2回" },
+        3: { start: {x: 0, y: 4}, goal: {x: 8, y: 4}, ifWalls: [{x: 3, y: 4}, {x: 6, y: 4}], code: "まえにすすむ\nもしカベがあるなら：ジャンプする、そうでなければ：まえにすすむ" }
+      },
+      treasure: {
+        1: { start: {x: 0, y: 4}, goal: {x: 8, y: 4}, treasures: [{x: 4, y: 4, points: 10}], code: "まえにすすむ\n(たからばこは1つだけだよ)" },
+        2: { start: {x: 0, y: 4}, goal: {x: 8, y: 4}, treasures: [{x: 3, y: 3, points: 10}, {x: 5, y: 5, points: 20}], code: "まえにすすむ" },
+        3: { start: {x: 0, y: 4}, goal: {x: 8, y: 4}, treasures: TREASURE_BOXES_CONFIG, code: "まえにすすむ" }
+      }
+    };
+
+    // ── 🏆 ゲームのクリアデータ（各モード・レベル別に保持します） ──
+    // 0:未クリア, 1:通常クリア★, 2:かくしクリア★★
+    let clearState = {
+      normal: { 1: 0, 2: 0, 3: 0 },
+      bug: { 1: 0, 2: 0, 3: 0 },
+      special: { 1: 0, 2: 0, 3: 0 },
+      maze: { 1: 0, 2: 0, 3: 0 },
+      loop: { 1: 0, 2: 0, 3: 0 },
+      condition: { 1: 0, 2: 0, 3: 0 },
+      treasure: { 1: 0, 2: 0, 3: 0 }
+    };
+    
+    const MODE_ORDER = ["normal", "bug", "special", "maze", "loop", "condition", "treasure"];
+    const LOOP_MAX_COUNT = 10;
+
+    // ------------------------------------------------------------------------
+    // 状態の管理（ゲームの今の状態をおぼえておく変数）
+    // ------------------------------------------------------------------------
+    let currentMode = "normal"; // 現在選択中のモード
+    let currentLevel = 1;      // 現在選択中のレベル（1, 2, 3）
+    let currentLevelConfig = {};// 現在のステージ設定オブジェクト
+    let currentX = 25;          // 位置
+    let currentY = 225;
+    let currentAngle = 0;       // キャラクターの向き
+    let isRunning = false;      // 実行中フラグ
+    let executionTimer = null;  // 実行タイマー
+    let bubbleTimer = null;     // 吹き出しタイマー
+    let treasureBoxes = [];     // 宝箱インスタンス
+    let score = 0;              // スコア
+
+    // 画面の要素
+    const stage = document.getElementById('stage');
+    const character = document.getElementById('character');
+    const charSkin = document.getElementById('char-skin');
+    const codeInput = document.getElementById('code-input');
+    const consoleArea = document.getElementById('console');
+    const skinInput = document.getElementById('skin-input');
+    const modeSelect = document.getElementById('mode-select');
+    const speechBubble = document.getElementById('speech-bubble');
+    const mazeContainer = document.getElementById('maze-container');
+    const helpCardContent = document.getElementById('help-card-content');
+    const debugPanel = document.getElementById('debug-panel');
+    const debugMultiplierSelect = document.getElementById('debug-multiplier-select');
+    const specialPanel = document.getElementById('special-panel');
+    const specialCodeInput = document.getElementById('special-code-input');
+    const scoreBoard = document.getElementById('score-board');
+    const scoreVal = document.getElementById('score-val');
+    const winModal = document.getElementById('win-modal');
+
+    // かんたんボタン
+    const btnSpecialPreset = document.getElementById('btn-special-preset');
+    const btnLoopPreset = document.getElementById('btn-loop-preset');
+    const btnIfPreset = document.getElementById('btn-if-preset');
+
+    // ------------------------------------------------------------------------
+    // 初期設定（ページロード時に実行）
+    // ------------------------------------------------------------------------
+    function init() {
+      // 🏆 セーブデータの読み込み
+      loadSaveData();
+
+      // ★ ステージの幅・高さとグリッドサイズを設定（これがないと描画エリアが潰れて見えなくなります）
+      stage.style.width = STAGE_WIDTH + 'px';
+      stage.style.height = STAGE_HEIGHT + 'px';
+      stage.style.backgroundSize = `${STEP_DISTANCE}px ${STEP_DISTANCE}px`;
+
+      // モード選択UIの更新
+      updateModeSelectUI();
+
+      // 初期値連動
+      currentMode = modeSelect.value;
+      setupMode();
+    }
+
+    // ------------------------------------------------------------------------
+    // セーブデータの保存と読み込み
+    // ------------------------------------------------------------------------
+    function loadSaveData() {
+      const data = localStorage.getItem('programming_learning_clear_state_levels_stars');
+      if (data) {
+        try {
+          const parsed = JSON.parse(data);
+          // 各モードの各レベルのデータを検証しながらコピーする（データのこわれを防ぎます）
+          if (parsed && typeof parsed === 'object') {
+            MODE_ORDER.forEach(mode => {
+              if (parsed[mode] && typeof parsed[mode] === 'object') {
+                for (let lvl = 1; lvl <= 3; lvl++) {
+                  if (parsed[mode][lvl] !== undefined) {
+                    clearState[mode][lvl] = parseInt(parsed[mode][lvl], 10) || 0;
+                  }
+                }
+              }
+            });
+          }
+        } catch (e) {
+          console.error("セーブデータ読み込み失敗:", e);
+        }
+      }
+    }
+
+    function saveClearState() {
+      localStorage.setItem('programming_learning_clear_state_levels_stars', JSON.stringify(clearState));
+    }
+
+    // ── モード全体としてのスター評価を判定する関数（1:★1, 2:★2, 0:未クリア） ──
+    function getModeStarCount(mode) {
+      const lvl1 = clearState[mode][1];
+      const lvl2 = clearState[mode][2];
+      const lvl3 = clearState[mode][3];
+
+      if (lvl1 === 2 && lvl2 === 2 && lvl3 === 2) return 2; // すべて難易度で★★なら★★
+      if (lvl1 >= 1 && lvl2 >= 1 && lvl3 >= 1) return 1;  // すべて難易度で★1以上なら★
+      return 0; // いずれかが未クリアなら星なし
+    }
+
+    // ------------------------------------------------------------------------
+    // セレクトボックスUIの更新
+    // ------------------------------------------------------------------------
+    function updateModeSelectUI() {
+      let prevCleared = true; // 最初のモードはアンロック
+
+      MODE_ORDER.forEach((mode, index) => {
+        const option = modeSelect.options[index];
+        const starsCount = getModeStarCount(mode);
+        const starsText = starsCount === 2 ? '★★' : (starsCount === 1 ? '★' : '');
+        
+        let baseText = "";
+        if (mode === "normal") baseText = "① レシピ作成（順序）モード 📝";
+        else if (mode === "bug") baseText = "② バグ探しモード 🔍";
+        else if (mode === "special") baseText = "③ 必殺技（関数）モード ⚡";
+        else if (mode === "maze") baseText = "④ 迷路パズルモード 🧱";
+        else if (mode === "loop") baseText = "⑤ 自動化（ループ）モード 🔁";
+        else if (mode === "condition") baseText = "⑥ 条件分岐（判断）モード ❓";
+        else if (mode === "treasure") baseText = "⑦ 変数の宝箱モード 💎";
+
+        option.text = `${baseText} ${starsText}`;
+
+        // 段階アンロック判定：手前のモード全体で★1つ以上を獲得していれば解放
+        if (index > 0) {
+          const prevMode = MODE_ORDER[index - 1];
+          prevCleared = prevCleared && (getModeStarCount(prevMode) >= 1);
+        }
+        option.disabled = !prevCleared;
+      });
+    }
+
+    // ------------------------------------------------------------------------
+    // 難易度（レベル）の切り替え処理
+    // ------------------------------------------------------------------------
+    function changeLevel(levelNum) {
+      resetApp();
+      currentLevel = levelNum;
+      setupMode();
+    }
+
+    // ── 難易度ボタンのUI（アクティブ状態や星表示）の更新 ──
+    function updateLevelButtonsUI() {
+      for (let i = 1; i <= 3; i++) {
+        const btn = document.getElementById(`btn-level-${i}`);
+        const state = clearState[currentMode][i];
+        const starsText = state === 2 ? '★★' : (state === 1 ? '★' : '');
+
+        btn.innerHTML = `レベル ${i} ${starsText}`;
+
+        if (i === currentLevel) {
+          // 選択中のレベルボタンのハイライトスタイル
+          btn.style.background = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
+          btn.style.color = "white";
+          btn.style.borderColor = "#764ba2";
+        } else {
+          // 未選択のレベルボタンのスタイル
+          btn.style.background = "#edf2f7";
+          btn.style.color = "#4a5568";
+          btn.style.borderColor = "#e2e8f0";
+        }
+      }
+    }
+
+    // ------------------------------------------------------------------------
+    // 各モードおよびレベルのセットアップ
+    // ------------------------------------------------------------------------
+    function setupMode() {
+      mazeContainer.innerHTML = "";
+      character.classList.remove('winning');
+      scoreBoard.style.display = "none";
+
+      // かんたんボタンの非表示
+      btnSpecialPreset.style.display = "none";
+      btnLoopPreset.style.display = "none";
+      btnIfPreset.style.display = "none";
+
+      // 現在のレベル設定オブジェクトを割り当てます
+      currentLevelConfig = LEVELS_CONFIG[currentMode][currentLevel];
+
+      // 開始位置・向きの初期設定
+      currentX = (currentLevelConfig.start.x * STEP_DISTANCE) + (STEP_DISTANCE / 2);
+      currentY = (currentLevelConfig.start.y * STEP_DISTANCE) + (STEP_DISTANCE / 2);
+      currentAngle = 0;
+
+      // エディタの初期プログラム値
+      codeInput.value = currentLevelConfig.code;
+
+      // 難易度選択ボタンUIの更新
+      updateLevelButtonsUI();
+
+      // 各オブジェクトの描画
+      drawStageObjects();
+
+      consoleArea.innerHTML = "";
+      logMessage(`モード：${modeSelect.options[modeSelect.selectedIndex].text} （レベル ${currentLevel}）`, "success");
+
+      // モードに応じたUIやパネルの表示制御
+      if (currentMode === "normal") {
+        debugPanel.style.display = "none";
+        specialPanel.style.display = "none";
+
+        showBubble(`レベル ${currentLevel} スタート！📝`);
+        logMessage("レシピ作成モード：1行ずつ命令を並べて、順番にロボットを動かそう！", "info");
+
+        helpCardContent.innerHTML = `
+          <h4>📝 レシピ作成（順序）モードのルール</h4>
+          <p>ロボットをプログラミングして、右端のゴール（⭐）までうごかしましょう！</p>
+          <p><strong>★かくし要素★</strong>: このモードのすべてのレベル（1〜3）を、「<strong>くり返し（○回）</strong>」または「<strong>判断（もし）</strong>」を使ったプログラムでクリアすると、モード全体の星が <strong>★★</strong> になるよ！</p>
+        `;
+      }
+      else if (currentMode === "bug") {
+        BUG_MULTIPLIER_VAL = currentLevelConfig.bugVal; // 難易度別のバグ倍率を取得
+        debugMultiplierSelect.value = BUG_MULTIPLIER_VAL.toString();
+
+        debugPanel.style.display = "block"; // 🛠️ デバッグパネルを表示
+        specialPanel.style.display = "none";
+
+        showBubble("バグを修正してゴールへ向かおう！🔍");
+        logMessage(`バグ探しモード：現在の前進倍率は ${BUG_MULTIPLIER_VAL}倍 のバグ状態です。`, "info");
+
+        helpCardContent.innerHTML = `
+          <h4>🔍 バグ探しモードのルール</h4>
+          <p>ロボットが設定変数とずれた進み方をします。右側の修正パネルから正しい倍率を選んで適用してから実行してね！</p>
+        `;
+      }
+      else if (currentMode === "special") {
+        SPECIAL_MOVE_ACTION = [...INITIAL_SPECIAL_MOVE_ACTION];
+        specialCodeInput.value = SPECIAL_MOVE_ACTION.join('\n');
+
+        btnSpecialPreset.style.display = "inline-flex";
+        debugPanel.style.display = "none";
+        specialPanel.style.display = "block"; // ⚡ 必殺技づくりパネルを表示
+
+        showBubble("必殺技を組み立てよう！⚡");
+        logMessage("必殺技モード：必殺技を自分で定義し、呼び出してゴール（⭐）を目指そう！", "info");
+
+        helpCardContent.innerHTML = `
+          <h4>⚡ 必殺技モードのルール</h4>
+          <p>「必殺技づくりパネル」でオリジナルの連続命令を組み立ててセットし、メインから呼び出そう！</p>
+        `;
+      }
+      else if (currentMode === "maze") {
+        debugPanel.style.display = "none";
+        specialPanel.style.display = "none";
+
+        showBubble("カベを避けて進もう！🧱");
+        logMessage("迷路パズルモード：カベを避けてゴール（⭐）を目指そう！", "info");
+
+        helpCardContent.innerHTML = `
+          <h4>🧱 迷路パズルモードのルール</h4>
+          <p>赤いカベにぶつからないように、うまい迂回レシピを組み立ててクリアを目指そう！</p>
+        `;
+      }
+      else if (currentMode === "loop") {
+        btnLoopPreset.style.display = "inline-flex";
+        debugPanel.style.display = "none";
+        specialPanel.style.display = "none";
+
+        showBubble("ループを使って短いコードでゴールへ！🔁");
+        logMessage("自動化モード：「○回」と書いて、少ない命令でゴール（⭐）を目指そう！", "info");
+
+        helpCardContent.innerHTML = `
+          <h4>🔁 自動化（ループ）モードのルール</h4>
+          <p>「まえにすすむ 3回」のように、命令のあとに回数を指定してコンパクトに動かそう！</p>
+          <p><strong>★かくし要素★</strong>: すべてのレベルで「<strong>判断（もし）</strong>」を使ったプログラムでクリアすると、全体の星が <strong>★★</strong> になるよ！</p>
+        `;
+      }
+      else if (currentMode === "condition") {
+        btnIfPreset.style.display = "inline-flex";
+        debugPanel.style.display = "none";
+        specialPanel.style.display = "none";
+
+        showBubble("「もし〜なら」を使って判断させよう！❓");
+        logMessage("条件分岐モード：カベがあるかないかロボットに判断させてゴール（⭐）を目指そう！", "info");
+
+        helpCardContent.innerHTML = `
+          <h4>❓ 条件分岐（判断）モードのルール</h4>
+          <p>「もしカベがあるなら：ジャンプする、そうでなければ：まえにすすむ」のifロジックで障害物を回避させよう！</p>
+          <p><strong>★かくし要素★</strong>: すべてのレベルで「<strong>くり返し（○回）</strong>」を使ってクリアすると、全体の星が <strong>★★</strong> になるよ！</p>
+        `;
+      }
+      else if (currentMode === "treasure") {
+        // 宝箱の初期化
+        treasureBoxes = currentLevelConfig.treasures ? currentLevelConfig.treasures.map(b => ({ ...b, opened: false })) : [];
+        score = 0;
+        scoreVal.innerText = score;
+        scoreBoard.style.display = "inline-flex"; // スコア表示
+
+        debugPanel.style.display = "none";
+        specialPanel.style.display = "none";
+
+        showBubble("宝箱をすべて回収してね！💎");
+        logMessage("変数の宝箱モード：宝箱「🎁」を全て開封し、ゴール（⭐）へたどり着いてね！", "info");
+
+        helpCardContent.innerHTML = `
+          <h4>💎 変数の宝箱モードのルール</h4>
+          <p>ステージ上に置かれた宝箱をすべてゲットして得点（スコア変数）を加算した状態で、ゴール（⭐）に行ってね！</p>
+        `;
+      }
+
+      updateCharacterView();
+    }
+
+    // ------------------------------------------------------------------------
+    // オブジェクトの描画処理（難易度設定から読み込んで配置）
+    // ------------------------------------------------------------------------
+    function drawStageObjects() {
+      // 1. ゴールの描画
+      const goal = currentLevelConfig.goal ? currentLevelConfig.goal : GLOBAL_GOAL_GRID;
+      const goalEl = document.createElement('div');
+      goalEl.className = 'maze-goal';
+      goalEl.style.left = (goal.x * STEP_DISTANCE) + 'px';
+      goalEl.style.top = (goal.y * STEP_DISTANCE) + 'px';
+      goalEl.style.width = STEP_DISTANCE + 'px';
+      goalEl.style.height = STEP_DISTANCE + 'px';
+      goalEl.innerHTML = '⭐';
+      mazeContainer.appendChild(goalEl);
+
+      // 2. 迷路のカベ（maze）の描画
+      if (currentMode === "maze" && currentLevelConfig.walls) {
+        currentLevelConfig.walls.forEach(wall => {
+          const wallEl = document.createElement('div');
+          wallEl.className = 'maze-wall';
+          wallEl.style.left = (wall.x * STEP_DISTANCE) + 'px';
+          wallEl.style.top = (wall.y * STEP_DISTANCE) + 'px';
+          wallEl.style.width = STEP_DISTANCE + 'px';
+          wallEl.style.height = STEP_DISTANCE + 'px';
+          mazeContainer.appendChild(wallEl);
+        });
+      }
+
+      // 3. 条件分岐のカベ（condition）の描画
+      if (currentMode === "condition" && currentLevelConfig.ifWalls) {
+        currentLevelConfig.ifWalls.forEach(wall => {
+          const ifWallEl = document.createElement('div');
+          ifWallEl.className = 'if-wall';
+          ifWallEl.style.left = (wall.x * STEP_DISTANCE) + 'px';
+          ifWallEl.style.top = (wall.y * STEP_DISTANCE) + 'px';
+          ifWallEl.style.width = STEP_DISTANCE + 'px';
+          ifWallEl.style.height = STEP_DISTANCE + 'px';
+          ifWallEl.innerHTML = '🧱';
+          mazeContainer.appendChild(ifWallEl);
+        });
+      }
+
+      // 4. 宝箱（treasure）の描画
+      if (currentMode === "treasure" && treasureBoxes) {
+        treasureBoxes.forEach((box, index) => {
+          const boxEl = document.createElement('div');
+          boxEl.className = 'maze-treasure';
+          boxEl.id = `treasure-${index}`;
+          boxEl.style.left = (box.x * STEP_DISTANCE) + 'px';
+          boxEl.style.top = (box.y * STEP_DISTANCE) + 'px';
+          boxEl.style.width = STEP_DISTANCE + 'px';
+          boxEl.style.height = STEP_DISTANCE + 'px';
+          boxEl.innerHTML = box.opened ? '🔓' : '🎁';
+          mazeContainer.appendChild(boxEl);
+        });
+      }
+    }
+
+    // ── カベ（壁）衝突検知のレベル共通判定 ──
+    function checkHasWall(gridX, gridY) {
+      if (currentMode === "maze" && currentLevelConfig.walls && currentLevelConfig.walls.some(w => w.x === gridX && w.y === gridY)) {
+        return true;
+      }
+      if (currentMode === "condition" && currentLevelConfig.ifWalls && currentLevelConfig.ifWalls.some(w => w.x === gridX && w.y === gridY)) {
+        return true;
+      }
+      return false;
+    }
+
+    // ------------------------------------------------------------------------
+    // プログラムの実行処理
+    // ------------------------------------------------------------------------
+    function runProgram() {
+      if (isRunning) {
+        logMessage("いまプログラムを実行中だよ。終わるのを待つか、リセットしてね。", "info");
+        return;
+      }
+
+      resetPosition();
+      isRunning = true;
+      logMessage(`プログラムの実行をスタートしたよ！ (レベル ${currentLevel})`, "success");
+
+      // 宝箱を未開封状態に戻します
+      if (currentMode === "treasure") {
+        treasureBoxes = currentLevelConfig.treasures ? currentLevelConfig.treasures.map(b => ({ ...b, opened: false })) : [];
+        score = 0;
+        scoreVal.innerText = score;
+        treasureBoxes.forEach((box, i) => {
+          const el = document.getElementById(`treasure-${i}`);
+          if (el) el.innerHTML = '🎁';
+        });
+      }
+
+      const lines = codeInput.value.split('\n');
+      
+      const rawCommands = [];
+      for (let i = 0; i < lines.length; i++) {
+        const cmd = lines[i].trim();
+        if (cmd !== "" && !cmd.startsWith('(') && !cmd.startsWith('（')) {
+          rawCommands.push({
+            text: cmd,
+            lineNumber: i + 1
+          });
+        }
+      }
+
+      if (rawCommands.length === 0) {
+        logMessage("エラー: 命令が何も入力されていません。", "error");
+        showBubble("命令を入れてね！");
+        isRunning = false;
+        return;
+      }
+
+      // 🔁 ループの共通パース展開
+      const commands = [];
+      rawCommands.forEach(cmdObj => {
+        const loopMatch = cmdObj.text.match(/^(.+?)(?:\s|　)+(\d+)回$/);
+        
+        if (loopMatch) {
+          const baseCmd = loopMatch[1].trim();
+          let count = parseInt(loopMatch[2], 10);
+          
+          if (count > LOOP_MAX_COUNT) {
+            logMessage(`⚠️ ループ回数が多すぎます。安全のために ${LOOP_MAX_COUNT}回 に制限したよ。`, "error");
+            count = LOOP_MAX_COUNT;
+          }
+
+          logMessage(`🔁 ループ：命令 「${baseCmd}」 を ${count}回 くり返すように展開したよ。`, "success");
+          
+          for (let j = 0; j < count; j++) {
+            commands.push({
+              text: baseCmd,
+              lineNumber: `${cmdObj.lineNumber}行め (くり返し ${j + 1}/${count}回)`
+            });
+          }
+        } else {
+          commands.push(cmdObj);
+        }
+      });
+
+      let index = 0;
+
+      function executeNext() {
+        if (index >= commands.length) {
+          checkClearStatus();
+          isRunning = false;
+          return;
+        }
+
+        const currentCommand = commands[index];
+        logMessage(`${currentCommand.lineNumber}行め: 「${currentCommand.text}」を実行中...`, "info");
+
+        const result = processCommand(currentCommand, commands, index);
+        
+        if (result.status === "error") {
+          isRunning = false;
+          return;
+        }
+
+        index++;
+        const delay = result.delay ? result.delay : MOVE_SPEED;
+        executionTimer = setTimeout(executeNext, delay);
+      }
+
+      executeNext();
+    }
+
+    // ------------------------------------------------------------------------
+    // 1つの命令の中身を判別して動かす処理
+    // ------------------------------------------------------------------------
+    function processCommand(currentCommand, commandsList, currentIndex) {
+      let commandText = currentCommand.text;
+
+      // ── ❓ 条件分岐の共通判定 ──
+      if (commandText.startsWith("もしカベがあるなら")) {
+        logMessage("❓ 判断処理：目の前にカベがあるかロボットがチェックします...", "info");
+        
+        const clean = commandText.replace(/^もしカベがあるなら[：:：]?/, "");
+        const parts = clean.split(/そうでなければ[：:：]?/);
+        const trueCmd = parts[0] ? parts[0].trim() : "";
+        const falseCmd = parts[1] ? parts[1].trim() : "";
+
+        const angle = ((currentAngle % 360) + 360) % 360;
+        const gridX = Math.floor(currentX / STEP_DISTANCE);
+        const gridY = Math.floor(currentY / STEP_DISTANCE);
+        let frontX = gridX;
+        let frontY = gridY;
+
+        if (angle === 0) frontX += 1;
+        else if (angle === 90) frontY += 1;
+        else if (angle === 180) frontX -= 1;
+        else if (angle === 270) frontY -= 1;
+
+        const isWall = checkHasWall(frontX, frontY);
+
+        if (isWall) {
+          logMessage("➔ [判定結果] 目の前にカベがあります！【もし】の命令を実行します。", "success");
+          commandText = trueCmd;
+        } else {
+          logMessage("➔ [判定結果] 目の前にカベはありません。【そうでなければ】の命令を実行します。", "success");
+          commandText = falseCmd;
+        }
+        
+        logMessage(`  実行するめいれい： 「${commandText}」`, "info");
+      }
+
+      // ── 「ジャンプする」特別命令 ──
+      if (commandText === "ジャンプする") {
+        showBubble("ジャンプ！ぴょんっ！🐰");
+        logMessage("ロボットはその場でジャンプしました！", "success");
+        character.classList.add('jumping');
+        setTimeout(() => {
+          character.classList.remove('jumping');
+        }, MOVE_SPEED);
+        return { status: "success", delay: MOVE_SPEED * 1.2 };
+      }
+
+      // ── 命令が「まえにすすむ」のとき ──
+      if (commandText === "まえにすすむ") {
+        const angle = ((currentAngle % 360) + 360) % 360;
+
+        let nextX = currentX;
+        let nextY = currentY;
+        
+        let distance = STEP_DISTANCE;
+
+        // ★★★ 【バグ探しモード】用のプログラム分岐 ★★★
+        if (currentMode === "bug") {
+          distance = STEP_DISTANCE * BUG_MULTIPLIER_VAL;
+          
+          if (BUG_MULTIPLIER_VAL !== 1) {
+            showBubble(`バグで進みすぎちゃう！ (${BUG_MULTIPLIER_VAL}倍)`);
+            logMessage(`⚠️ バグ発生：${distance}ピクセル進んでしまいました（予定の${BUG_MULTIPLIER_VAL}倍）。`, "error");
+          } else {
+            showBubble("まえに進むよ！🚶");
+            logMessage(`まえに ${distance}ピクセル 進みました。`, "success");
+          }
+        } else {
+          showBubble("まえに進むよ！🚶");
+        }
+
+        if (angle === 0) nextX += distance;
+        else if (angle === 90) nextY += distance;
+        else if (angle === 180) nextX -= distance;
+        else if (angle === 270) nextY -= distance;
+
+        // はみ出し判定
+        if (nextX < 0 || nextX > STAGE_WIDTH || nextY < 0 || nextY > STAGE_HEIGHT) {
+          showBubble("そとはあぶないよ！🛑");
+          logMessage("⚠️ はみ出しエラー：ステージの外には出られません！", "error");
+          return { status: "error" };
+        }
+
+        const gridX = Math.floor(nextX / STEP_DISTANCE);
+        const gridY = Math.floor(nextY / STEP_DISTANCE);
+
+        // カベ衝突検知
+        if (checkHasWall(gridX, gridY)) {
+          showBubble("いたいっ！カベにぶつかった！ 💥");
+          logMessage(`💥 カベ衝突エラー: マス目(${gridX}, ${gridY}) にはカベがあるので進めません！`, "error");
+          return { status: "error" };
+        }
+
+        currentX = nextX;
+        currentY = nextY;
+        updateCharacterView();
+
+        // 宝箱の接触判定
+        if (currentMode === "treasure") {
+          treasureBoxes.forEach((box, i) => {
+            if (box.x === gridX && box.y === gridY && !box.opened) {
+              box.opened = true;
+              score += box.points;
+              scoreVal.innerText = score;
+              const el = document.getElementById(`treasure-${i}`);
+              if (el) el.innerHTML = '🔓';
+
+              showBubble(`たから箱ゲット！ ＋${box.points}点！💰`);
+              logMessage(`💎 宝箱を発見しました！ 得点+${box.points}点！ （今のスコアは ${score} 点です）`, "success");
+            }
+          });
+        }
+
+        return { status: "success" };
+      } 
+      
+      // ── 命令が「みぎをむく」のとき ──
+      else if (commandText === "みぎをむく") {
+        currentAngle += 90;
+        showBubble("みぎを向くよ ↪️");
+        updateCharacterView();
+        return { status: "success" };
+      } 
+      
+      // ── 命令が「ひだりをむく」のとき ──
+      else if (commandText === "ひだりをむく") {
+        currentAngle -= 90;
+        showBubble("ひだりを見るよ ↩️");
+        updateCharacterView();
+        return { status: "success" };
+      } 
+      
+      // ── 命令が「ひっさつわざ」のとき ──
+      else if (commandText === "ひっさつわざ" || commandText === "必殺技") {
+        if (currentMode !== "special") {
+          showBubble("ここでは使えないよ 🥺");
+          logMessage("⚠️ 必殺技は「必殺技モード」のときだけ使えます。", "error");
+          return { status: "error" };
+        }
+
+        showBubble("ひっさつわざ！大ジャンプ！⚡");
+        logMessage("⚡ 必殺技発動！自分でつくった必殺技を展開します！", "success");
+
+        character.classList.add('jumping');
+        setTimeout(() => {
+          character.classList.remove('jumping');
+        }, MOVE_SPEED);
+
+        const subCommands = [];
+        SPECIAL_MOVE_ACTION.forEach((actionText, subIndex) => {
+          subCommands.push({
+            text: actionText,
+            lineNumber: `${currentCommand.lineNumber}（必殺技のめいれい-${subIndex + 1}）`
+          });
+        });
+
+        commandsList.splice(currentIndex + 1, 0, ...subCommands);
+
+        return { status: "success", delay: MOVE_SPEED * 1.2 };
+      } 
+      
+      // ── エラー ──
+      else {
+        showBubble("あれれ？ ❓");
+        logMessage(`⚠️ 命令エラー：「${commandText}」は正しい命令ではありません。書き間違えていないかな？`, "error");
+        return { status: "error" };
+      }
+    }
+
+    // ------------------------------------------------------------------------
+    // 🏆 クリア・隠しクリアのチェック判定
+    // ------------------------------------------------------------------------
+    function checkClearStatus() {
+      const gridX = Math.floor(currentX / STEP_DISTANCE);
+      const gridY = Math.floor(currentY / STEP_DISTANCE);
+      const goal = currentLevelConfig.goal ? currentLevelConfig.goal : GLOBAL_GOAL_GRID;
+
+      // ゴールにたどり着いたか
+      if (gridX === goal.x && gridY === goal.y) {
+        
+        // 宝箱モードでは、すべての宝箱が回収されていることが条件
+        if (currentMode === "treasure") {
+          const allOpened = treasureBoxes.every(box => box.opened);
+          if (!allOpened) {
+            showBubble("宝箱がのこっているよ！🎁");
+            logMessage("ゴールしましたが、まだ開けていない宝箱があるためクリアになりません！", "error");
+            return;
+          }
+        }
+
+        showBubble(`レベル ${currentLevel} クリア！ ⭐🎉`);
+        logMessage(`🏆 おめでとう！レベル ${currentLevel} をクリアしたよ！`, "success");
+        character.classList.add('winning');
+
+        // ── ★／★★（かくしクリア）の判定 ──
+        const progText = codeInput.value;
+        const usedFor = progText.includes("回");
+        const usedIf = progText.includes("もし");
+        let isHiddenClear = false;
+
+        if (currentMode === "loop") {
+          if (usedIf) isHiddenClear = true;
+        } 
+        else if (currentMode === "condition") {
+          if (usedFor) isHiddenClear = true;
+        } 
+        else {
+          if (usedFor || usedIf) isHiddenClear = true;
+        }
+
+        const starEarned = isHiddenClear ? 2 : 1;
+        
+        // クリアデータの更新
+        if (clearState[currentMode][currentLevel] < starEarned) {
+          clearState[currentMode][currentLevel] = starEarned;
+          saveClearState();
+          
+          // セレクトボックス及び難易度ボタンの星表示を更新
+          updateModeSelectUI();
+          updateLevelButtonsUI();
+
+          if (starEarned === 2) {
+            logMessage(`🌟🌟 レベル ${currentLevel}：【かくしクリア ★★】達成！ 素晴らしい応用力です！`, "success");
+            showBubble("かくしクリア！★★ 🌟🌟");
+          } else {
+            logMessage(`🌟 レベル ${currentLevel}：【通常クリア ★】達成！`, "success");
+          }
+        } else {
+          // すでにクリア済みで、★1から★2へのアップグレード判定
+          if (starEarned === 2 && clearState[currentMode][currentLevel] === 1) {
+            clearState[currentMode][currentLevel] = 2;
+            saveClearState();
+            updateModeSelectUI();
+            updateLevelButtonsUI();
+            logMessage(`🌟🌟 レベル ${currentLevel}：【かくしクリア ★★】にアップグレード！`, "success");
+            showBubble("かくしクリア！★★ 🌟🌟");
+          }
+        }
+
+        // 完全クリア（全7モードの全難易度で★★）のチェック
+        checkPerfectClear();
+
+      } else {
+        showBubble("ゴールまでとどかなかったよ 🥺");
+        logMessage("実行完了：ゴールに届きませんでした。もう一度考えてみてね！", "info");
+      }
+    }
+
+    // ── 完全クリア判定 ──
+    function checkPerfectClear() {
+      // すべてのモード・レベルで ★★ がついているか
+      const perfect = MODE_ORDER.every(mode => getModeStarCount(mode) === 2);
+      if (perfect) {
+        setTimeout(() => {
+          showWinModal();
+        }, 1200);
+      }
+    }
+
+    function showWinModal() {
+      winModal.style.display = "flex";
+      showBubble("パーフェクトクリア！🏆👑🎖️");
+    }
+
+    function closeWinModal() {
+      winModal.style.display = "none";
+    }
+
+    // ── すべてのデータを消して最初から遊ぶ ──
+    function resetAllData() {
+      localStorage.removeItem('programming_learning_clear_state_levels_stars');
+      clearState = {
+        normal: { 1: 0, 2: 0, 3: 0 },
+        bug: { 1: 0, 2: 0, 3: 0 },
+        special: { 1: 0, 2: 0, 3: 0 },
+        maze: { 1: 0, 2: 0, 3: 0 },
+        loop: { 1: 0, 2: 0, 3: 0 },
+        condition: { 1: 0, 2: 0, 3: 0 },
+        treasure: { 1: 0, 2: 0, 3: 0 }
+      };
+      saveClearState();
+      
+      currentLevel = 1;
+      modeSelect.value = "normal";
+      currentMode = "normal";
+      
+      updateModeSelectUI();
+      closeWinModal();
+      setupMode();
+    }
+
+    // ------------------------------------------------------------------------
+    // アプリのリセット処理
+    // ------------------------------------------------------------------------
+    function resetApp() {
+      if (executionTimer) {
+        clearTimeout(executionTimer);
+      }
+      isRunning = false;
+      resetPosition();
+      
+      if (currentMode === "bug") {
+        BUG_MULTIPLIER_VAL = currentLevelConfig.bugVal;
+        debugMultiplierSelect.value = BUG_MULTIPLIER_VAL.toString();
+      }
+
+      if (currentMode === "treasure") {
+        score = 0;
+        scoreVal.innerText = score;
+        treasureBoxes = currentLevelConfig.treasures ? currentLevelConfig.treasures.map(b => ({ ...b, opened: false })) : [];
+        treasureBoxes.forEach((box, i) => {
+          const el = document.getElementById(`treasure-${i}`);
+          if (el) el.innerHTML = '🎁';
+        });
+      }
+      
+      consoleArea.innerHTML = "";
+      logMessage("最初のじょうたいに戻したよ！", "success");
+      showBubble("リセットしたよ！🔄");
+    }
+
+    function resetPosition() {
+      character.classList.remove('winning');
+      currentX = (currentLevelConfig.start.x * STEP_DISTANCE) + (STEP_DISTANCE / 2);
+      currentY = (currentLevelConfig.start.y * STEP_DISTANCE) + (STEP_DISTANCE / 2);
+      currentAngle = 0;
+      updateCharacterView();
+    }
+
+    // ------------------------------------------------------------------------
+    // UI・ヘルパー関数群
+    // ------------------------------------------------------------------------
+    function changeMode() {
+      currentMode = modeSelect.value;
+      currentLevel = 1; // モードを変えたらレベル1にする
+      resetApp();
+      setupMode();
+    }
+
+    function updateCharacterView() {
+      character.style.left = currentX + 'px';
+      character.style.top = currentY + 'px';
+      charSkin.style.transform = `rotate(${currentAngle}deg)`;
+    }
+
+    function showBubble(text) {
+      if (bubbleTimer) clearTimeout(bubbleTimer);
+      speechBubble.innerText = text;
+      speechBubble.style.opacity = 1;
+      bubbleTimer = setTimeout(() => {
+        speechBubble.style.opacity = 0;
+      }, 2000);
+    }
+
+    function logMessage(msg, type) {
+      const line = document.createElement('div');
+      line.className = 'console-line ' + type;
+      line.innerText = msg;
+      consoleArea.appendChild(line);
+      consoleArea.scrollTop = consoleArea.scrollHeight;
+    }
+
+    function changeCharacter() {
+      const val = skinInput.value.trim();
+      if (!val) return;
+      if (val.startsWith('http://') || val.startsWith('https://')) {
+        charSkin.className = 'image-skin';
+        charSkin.innerHTML = `<img src="${val}" alt="custom" style="width:100%; height:100%; object-fit:contain; border-radius:8px;">`;
+      } else {
+        charSkin.className = 'emoji-skin';
+        charSkin.innerHTML = val;
+      }
+      logMessage(`キャラクターの見た目を「${val}」に変更しました！`, "success");
+      showBubble("おきがえ完了！✨");
+    }
+
+    function insertCommand(cmd) {
+      const val = codeInput.value;
+      codeInput.value = val ? val + '\n' + cmd : cmd;
+      logMessage(`命令「${cmd}」を追加しました。`, "info");
+      codeInput.scrollTop = codeInput.scrollHeight;
+    }
+
+    function applyBugFix() {
+      const val = parseFloat(debugMultiplierSelect.value);
+      BUG_MULTIPLIER_VAL = val;
+      logMessage(`🛠️ バグ修正適用：前進倍率を ${val}倍 にセットしました！実行して直ったか確認してね。`, "success");
+      showBubble("なおったかな？🤔");
+    }
+
+    function applySpecialMove() {
+      const val = specialCodeInput.value;
+      if (!val.trim()) {
+        logMessage("エラー：必殺技の命令が空っぽです！", "error");
+        return;
+      }
+      SPECIAL_MOVE_ACTION = val.split('\n').map(c => c.trim()).filter(c => c !== "");
+      logMessage("⚡ 必殺技の更新：新しい必殺技をセットしました！", "success");
+      showBubble("必殺技セット完了！⚡");
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
