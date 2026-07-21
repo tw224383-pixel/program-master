@@ -733,6 +733,59 @@
       color: white;
       box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
     }
+
+    /* 🐛 デバッグモードトグルボタン */
+    .btn-toggle-debug {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 25px;
+      background: #4a5568;
+      color: white;
+      font-size: 24px;
+      border: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      cursor: pointer;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .btn-toggle-debug:hover {
+      transform: scale(1.1);
+      background: #2d3748;
+    }
+
+    /* 🛠 デバッグ情報パネル */
+    .debug-info-panel {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      background: rgba(26, 32, 44, 0.9);
+      color: #00ff00;
+      padding: 16px;
+      border-radius: 12px;
+      border: 2px solid #4a5568;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      font-family: 'Consolas', monospace;
+      font-size: 0.9rem;
+      z-index: 999;
+      min-width: 200px;
+      backdrop-filter: blur(4px);
+    }
+    .debug-info-panel h4 {
+      color: #fff;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #4a5568;
+      padding-bottom: 4px;
+      font-size: 1rem;
+    }
+    .debug-info-panel div {
+      margin-bottom: 6px;
+    }
   </style>
 </head>
 <body>
@@ -895,6 +948,20 @@
     </div>
   </div>
 
+  <!-- 🐛 デバッグモードボタン & パネル -->
+  <button id="btn-toggle-debug" class="btn-toggle-debug" onclick="toggleDebugMode()">🐛</button>
+  <div id="debug-info-panel" class="debug-info-panel" style="display: none;">
+    <h4>🛠 デバッグ情報</h4>
+    <div>📍 座標: <span id="debug-pos">X=0, Y=4</span></div>
+    <div>🧭 向き: <span id="debug-angle">右 (0°)</span></div>
+    <div>⚙️ 倍率: <span id="debug-mult">1倍</span></div>
+    <div>💎 スコア: <span id="debug-score">0点</span></div>
+    <div>🏃 状態: <span id="debug-status">待機中</span></div>
+    <hr style="border: 1px solid #4a5568; margin: 8px 0;">
+    <button onclick="forceClear()" style="width:100%; padding: 6px; background:#e53e3e; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold; margin-bottom: 4px;">⚠️ 強制クリア (★★)</button>
+    <button onclick="debugStepX()" style="width:100%; padding: 6px; background:#4a5568; color:white; border:none; border-radius:4px; cursor:pointer;">▶️ X軸を1マス進む</button>
+  </div>
+
   <!-- ==========================================================================
        2. プログラム of JavaScript
        ========================================================================== */ -->
@@ -932,9 +999,9 @@
         3: { start: {x: 0, y: 8}, goal: {x: 8, y: 0}, code: "まえにすすむ\nみぎをむく\nまえにすすむ" }
       },
       bug: {
-        1: { start: {x: 0, y: 4}, goal: {x: 4, y: 4}, bugVal: 2, code: "まえにすすむ\nまえにすすむ" },
-        2: { start: {x: 0, y: 4}, goal: {x: 6, y: 4}, bugVal: 3, code: "まえにすすむ\nまえにすすむ" },
-        3: { start: {x: 0, y: 4}, goal: {x: 2, y: 4}, bugVal: 0.5, code: "まえにすすむ\nまえにすすむ\nまえにすすむ\nまえにすすむ" }
+        1: { start: {x: 0, y: 4}, goal: {x: 2, y: 4}, bugVal: 2, code: "まえにすすむ\nまえにすすむ" },
+        2: { start: {x: 0, y: 4}, goal: {x: 3, y: 4}, bugVal: 3, code: "まえにすすむ\nまえにすすむ\nまえにすすむ" },
+        3: { start: {x: 0, y: 4}, goal: {x: 4, y: 4}, bugVal: 0.5, code: "まえにすすむ\nまえにすすむ\nまえにすすむ\nまえにすすむ" }
       },
       special: {
         1: { start: {x: 0, y: 4}, goal: {x: 3, y: 4}, code: "ひっさつわざ" },
@@ -1007,6 +1074,7 @@
     let bubbleTimer = null;     // 吹き出しタイマー
     let treasureBoxes = [];     // 宝箱インスタンス
     let score = 0;              // スコア
+    let isDebugMode = false;    // デバッグモードフラグ
 
     // 画面の要素
     const stage = document.getElementById('stage');
@@ -1376,6 +1444,7 @@
 
       resetPosition();
       isRunning = true;
+      updateDebugInfo("実行開始！");
       logMessage(`プログラムの実行をスタートしたよ！ (レベル ${currentLevel})`, "success");
 
       // 宝箱を未開封状態に戻します
@@ -1442,6 +1511,7 @@
         if (index >= commands.length) {
           checkClearStatus();
           isRunning = false;
+          updateDebugInfo("実行完了");
           return;
         }
 
@@ -1452,6 +1522,7 @@
         
         if (result.status === "error") {
           isRunning = false;
+          updateDebugInfo("エラー停止");
           return;
         }
 
@@ -1768,14 +1839,18 @@
       resetPosition();
       
       if (currentMode === "bug") {
-        BUG_MULTIPLIER_VAL = currentLevelConfig.bugVal;
-        debugMultiplierSelect.value = BUG_MULTIPLIER_VAL.toString();
+        const config = LEVELS_CONFIG[currentMode][currentLevel];
+        if (config && config.bugVal !== undefined) {
+          BUG_MULTIPLIER_VAL = config.bugVal;
+          debugMultiplierSelect.value = BUG_MULTIPLIER_VAL.toString();
+        }
       }
 
       if (currentMode === "treasure") {
         score = 0;
         scoreVal.innerText = score;
-        treasureBoxes = currentLevelConfig.treasures ? currentLevelConfig.treasures.map(b => ({ ...b, opened: false })) : [];
+        const config = LEVELS_CONFIG[currentMode][currentLevel];
+        treasureBoxes = config && config.treasures ? config.treasures.map(b => ({ ...b, opened: false })) : [];
         treasureBoxes.forEach((box, i) => {
           const el = document.getElementById(`treasure-${i}`);
           if (el) el.innerHTML = '🎁';
@@ -1785,12 +1860,16 @@
       consoleArea.innerHTML = "";
       logMessage("最初のじょうたいに戻したよ！", "success");
       showBubble("リセットしたよ！🔄");
+      updateDebugInfo("リセット完了");
     }
 
     function resetPosition() {
       character.classList.remove('winning');
-      currentX = (currentLevelConfig.start.x * STEP_DISTANCE) + (STEP_DISTANCE / 2);
-      currentY = (currentLevelConfig.start.y * STEP_DISTANCE) + (STEP_DISTANCE / 2);
+      const config = LEVELS_CONFIG[currentMode][currentLevel];
+      if (config && config.start) {
+        currentX = (config.start.x * STEP_DISTANCE) + (STEP_DISTANCE / 2);
+        currentY = (config.start.y * STEP_DISTANCE) + (STEP_DISTANCE / 2);
+      }
       currentAngle = 0;
       updateCharacterView();
     }
@@ -1809,6 +1888,67 @@
       character.style.left = currentX + 'px';
       character.style.top = currentY + 'px';
       charSkin.style.transform = `rotate(${currentAngle}deg)`;
+      updateDebugInfo();
+    }
+
+    // ------------------------------------------------------------------------
+    // デバッグモード用の関数
+    // ------------------------------------------------------------------------
+    function toggleDebugMode() {
+      isDebugMode = !isDebugMode;
+      const panel = document.getElementById('debug-info-panel');
+      if (isDebugMode) {
+        panel.style.display = 'block';
+        updateDebugInfo("デバッグモードON");
+      } else {
+        panel.style.display = 'none';
+      }
+    }
+
+    function updateDebugInfo(statusStr) {
+      if (!isDebugMode) return;
+      
+      const gridX = Math.floor(currentX / STEP_DISTANCE);
+      const gridY = Math.floor(currentY / STEP_DISTANCE);
+      document.getElementById('debug-pos').innerText = `X=${gridX}, Y=${gridY}`;
+      
+      const angle = ((currentAngle % 360) + 360) % 360;
+      let dirStr = "";
+      if (angle === 0) dirStr = "右";
+      else if (angle === 90) dirStr = "下";
+      else if (angle === 180) dirStr = "左";
+      else if (angle === 270) dirStr = "上";
+      document.getElementById('debug-angle').innerText = `${dirStr} (${angle}°)`;
+      
+      document.getElementById('debug-mult').innerText = `${currentMode === "bug" ? BUG_MULTIPLIER_VAL : 1}倍`;
+      document.getElementById('debug-score').innerText = `${score}点`;
+      
+      if (statusStr) {
+        document.getElementById('debug-status').innerText = statusStr;
+      } else {
+        document.getElementById('debug-status').innerText = isRunning ? "実行中..." : "待機中";
+      }
+    }
+
+    function forceClear() {
+      if (!isDebugMode) return;
+      clearState[currentMode][currentLevel] = 2; // 強制的に★★クリア扱い
+      saveClearState();
+      updateModeSelectUI();
+      updateLevelButtonsUI();
+      showBubble("強制クリア！✨");
+      logMessage("⚠️ デバッグモード：強制クリアを実行しました。", "success");
+      character.classList.add('winning');
+      checkPerfectClear();
+      updateDebugInfo("強制クリア済");
+    }
+
+    function debugStepX() {
+      if (!isDebugMode) return;
+      currentX += STEP_DISTANCE;
+      updateCharacterView();
+      showBubble("ワープ！");
+      logMessage("⚠️ デバッグモード：X軸を1マス進めました。", "info");
     }
 
     function showBubble(text) {
@@ -1854,6 +1994,7 @@
       BUG_MULTIPLIER_VAL = val;
       logMessage(`🛠️ バグ修正適用：前進倍率を ${val}倍 にセットしました！実行して直ったか確認してね。`, "success");
       showBubble("なおったかな？🤔");
+      updateDebugInfo("バグ修正をセット");
     }
 
     function applySpecialMove() {
